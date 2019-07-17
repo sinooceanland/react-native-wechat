@@ -59,8 +59,9 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
     private final static String INVOKE_FAILED = "WeChat API invoke returns false.";
     private final static String INVALID_ARGUMENT = "invalid argument.";
 
-    public WeChatModule(ReactApplicationContext context) {
+    public WeChatModule(ReactApplicationContext context,String wxid) {
         super(context);
+        registerApp(appId,null);
     }
 
     @Override
@@ -252,7 +253,7 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
                         imageCallback.invoke(bitmap);
                     }
                 } else {
-                    throw new Exception("Empty bitmap");
+                   
                 }
             }
 
