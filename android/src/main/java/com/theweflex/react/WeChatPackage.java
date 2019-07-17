@@ -14,11 +14,18 @@ import java.util.List;
  * Created by tdzl2_000 on 2015-10-10.
  */
 public class WeChatPackage implements ReactPackage {
+    
+     private String appID;
+
+    public WeChatPackage(String appID){
+        this.appID = appID;
+    }
+    
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.asList(new NativeModule[]{
             // Modules from third-party
-            new WeChatModule(reactContext),
+            new WeChatModule(reactContext,appID),
         });
     }
 
