@@ -61,7 +61,8 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
 
     public WeChatModule(ReactApplicationContext context,String wxid) {
         super(context);
-        registerApp(appId,null);
+        this.appId = wxid;
+        api = WXAPIFactory.createWXAPI(getReactApplicationContext().getBaseContext(), wxid, true);
     }
 
     @Override
