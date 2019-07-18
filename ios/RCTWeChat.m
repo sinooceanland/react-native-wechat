@@ -17,6 +17,9 @@
 #define NOT_REGISTERED (@"registerApp required.")
 #define INVOKE_FAILED (@"WeChat API invoke returns false.")
 
+static NSString *gAppID = @"";
+static BOOL gIsAppRegistered = false;
+
 @implementation RCTWeChat
 
 @synthesize bridge = _bridge;
@@ -27,6 +30,7 @@ RCT_EXPORT_MODULE()
 {
     self = [super init];
     if (self) {
+        [self _autoRegisterAPI];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleOpenURL:) name:@"RCTOpenURLNotification" object:nil];
     }
     return self;
@@ -57,6 +61,35 @@ RCT_EXPORT_MODULE()
 
 + (BOOL)requiresMainQueueSetup {
     return YES;
+}
+
+- (void)_autoRegisterAPI
+{
+    if (gAppID.length > 0 && gIsAppRegistered) {
+        return;
+    }
+    
+    NSArray *list = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"CFBundleURLTypes"];
+    for (NSDictionary *item in list) {
+        NSString *name = item[@"CFBundleURLName"];
+        if ([name isEqualToString:@"weixin"]) {
+            NSArray *schemes = item[@"CFBundleURLSchemes"];
+            if (schemes.count > 0)
+            {
+                gAppID = schemes[0];
+                break;
+            }
+        }
+    }
+    //向微信注册
+    //gIsAppRegistered = [WXApi registerApp:gAppID enableMTA:YES];
+    self.appId = gAppID;
+    gIsAppRegistered = [WXApi registerApp:gAppID];
+    
+    //向微信注册支持的文件类型
+    UInt64 typeFlag = MMAPP_SUPPORT_TEXT | MMAPP_SUPPORT_PICTURE | MMAPP_SUPPORT_LOCATION | MMAPP_SUPPORT_VIDEO |MMAPP_SUPPORT_AUDIO | MMAPP_SUPPORT_WEBPAGE | MMAPP_SUPPORT_DOC | MMAPP_SUPPORT_DOCX | MMAPP_SUPPORT_PPT | MMAPP_SUPPORT_PPTX | MMAPP_SUPPORT_XLS | MMAPP_SUPPORT_XLSX | MMAPP_SUPPORT_PDF;
+    
+    [WXApi registerAppSupportContentFlag:typeFlag];
 }
 
 RCT_EXPORT_METHOD(registerApp:(NSString *)appid
@@ -387,15 +420,16 @@ RCT_EXPORT_METHOD(pay:(NSDictionary *)data
 	    else {
 	        [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
 	    }
-	} else if ([resp isKindOfClass:[PayResp class]]) {
-	        PayResp *r = (PayResp *)resp;
-	        NSMutableDictionary *body = @{@"errCode":@(r.errCode)}.mutableCopy;
-	        body[@"errStr"] = r.errStr;
-	        body[@"type"] = @(r.type);
-	        body[@"returnKey"] =r.returnKey;
-	        body[@"type"] = @"PayReq.Resp";
-	        [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
-    	}
+    } else if ([resp isKindOfClass:[PayResp class]]) {
+        PayResp *r = (PayResp *)resp;
+        NSMutableDictionary *body = @{@"errCode":@(r.errCode)}.mutableCopy;
+        body[@"errStr"] = r.errStr;
+        body[@"type"] = @(r.type);
+        body[@"returnKey"] =r.returnKey;
+        body[@"type"] = @"PayReq.Resp";
+        [self.bridge.eventDispatcher sendDeviceEventWithName:RCTWXEventName body:body];
+    }
+    NSLog(@"resp:%@", resp);
 }
 
 @end
