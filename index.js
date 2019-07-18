@@ -3,7 +3,8 @@
 import { DeviceEventEmitter, NativeModules, Platform } from 'react-native';
 import { EventEmitter } from 'events';
 
-let isAppRegistered = false;
+// let isAppRegistered = false;
+let isAppRegistered = true; // 原生组件内部自动注册了，所以默认 true，仍然可以调用 registerApp 方法
 const { WeChat } = NativeModules;
 
 // Event emitter to dispatch request and response from WeChat.
